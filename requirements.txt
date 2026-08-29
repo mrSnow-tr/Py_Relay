@@ -1,0 +1,26 @@
+# py_relay runtime dependencies
+#
+# websockets is the only dependency outside the Python standard library.
+# It provides the RFC 6455 WebSocket server implementation used by py_relay.
+# The standard library has no WebSocket implementation; websockets is the
+# smallest mature asyncio-native option available.
+#
+# Version range: >=10.0,<12.0 pins to the stable legacy API
+#   (websockets.serve with process_request and handler(websocket, path)).
+#
+# Why <12.0?
+#   websockets 12.0 redesigned the public API: the connection handler
+#   signature changed from (websocket, path) to (websocket,), and the
+#   process_request interface also changed.  Upgrading to 12.x requires
+#   updating server.py's handler and HTTP callback signatures.  We stay
+#   on 10.x/11.x to avoid unintentional breakage.
+#
+# Python 3.8 compatibility:
+#   websockets 10.x and 11.x both declare support for Python 3.7+.
+#   This constraint is safe for Python 3.8, 3.9, 3.10, 3.11, and 3.12.
+#   pip install will resolve to websockets 11.0.3 (the last 11.x release)
+#   when <12.0 is specified.
+#
+# No other runtime dependencies are required.
+
+websockets>=10.0,<12.0

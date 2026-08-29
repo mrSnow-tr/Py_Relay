@@ -1,0 +1,58 @@
+# render.yaml — py_relay deployment on Render.com
+#
+# Deploys a single Python Web Service.
+# No database, no persistent disk, no worker processes.
+#
+# TLS note
+# --------
+# Render terminates TLS at the edge (their load balancer / CDN layer).
+# The py_relay process receives plain HTTP/WebSocket traffic internally.
+# Public clients connect over wss:// (TLS) to Render's ingress, which
+# forwards decrypted traffic to the service on $PORT.
+# The internal Render → service hop is on Render's private network.
+#
+# Required manual step after first deploy
+# ----------------------------------------
+# AUTH_SECRET is shown as generateValue: true below, which tells Render to
+# auto-generate a random value.  Confirm the generated value in the Render
+# dashboard under Environment, then configure py_client with the same secret.
+
+services:
+  - type: web
+    name: py-relay
+    env: python
+    plan: free           # change to starter/standard for production
+    region: oregon       # adjust to your preferred region
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+
+    healthCheckPath: /health
+
+    envVars:
+      # ---- Required ----
+      - key: AUTH_SECRET
+        generateValue: true   # Render generates a random secret on first deploy.
+                              # Copy this value to every py_client instance.
+
+      # ---- Optional (safe defaults shown) ----
+      - key: RELAY_NAME
+        value: py-relay
+
+      - key: LOG_LEVEL
+        value: INFO
+
+      - key: HEARTBEAT_INTERVAL
+        value: "25"
+
+      - key: AUTH_TIMEOUT
+        value: "15"
+
+      - key: CLIENT_TIMEOUT
+        value: "90"
+
+      - key: MAX_CLIENTS
+        value: "100"
+
+      - key: MAX_MESSAGE_SIZE
+        value: "65536"
